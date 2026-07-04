@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "gateway:demo": "node ./scripts/run-ai-gateway-demo.js",
     "test": "node --test"
   }
 }
