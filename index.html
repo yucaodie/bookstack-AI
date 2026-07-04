@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BookStack-AI Demo</title>
+    <style>
+      :root {
+        --bg: #f4efe6;
+        --panel: #fffaf1;
+        --panel-strong: #f9f2df;
+        --text: #1f1a14;
+        --muted: #6d6256;
+        --accent: #b35c2e;
+        --accent-soft: #e9c3a6;
+        --border: #dfd2bf;
+        --shadow: 0 18px 48px rgba(72, 49, 29, 0.12);
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Georgia, "Noto Serif SC", serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(237, 209, 180, 0.85), transparent 28%),
+          linear-gradient(180deg, #f8f3eb 0%, var(--bg) 48%, #efe3d1 100%);
+        min-height: 100vh;
+      }
+
+      .shell {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        min-height: 100vh;
+      }
+
+      .content {
+        padding: 28px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+
+      .brand {
+        font-size: 28px;
+        letter-spacing: 0.02em;
+      }
+
+      .global-entry {
+        border: 1px solid var(--border);
+        background: rgba(255, 250, 241, 0.85);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 10px 16px;
+        cursor: pointer;
+        box-shadow: var(--shadow);
+      }
+
+      .hero {
+        background: rgba(255, 250, 241, 0.76);
+        border: 1px solid rgba(223, 210, 191, 0.9);
+        border-radius: 28px;
+        padding: 32px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        width: 240px;
+        height: 240px;
+        right: -48px;
+        top: -36px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(179, 92, 46, 0.17), transparent 70%);
+      }
+
+      .eyebrow {
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        font-size: 12px;
+        margin-bottom: 14px;
+      }
+
+      h1 {
+        font-size: clamp(34px, 5vw, 58px);
+        line-height: 1.02;
+        margin: 0 0 18px;
+        max-width: 10ch;
+      }
+
+      .lead {
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.7;
+        max-width: 58ch;
+        margin: 0;
+      }
+
+      .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 14px;
+        margin-top: 24px;
+      }
+
+      .meta-card {
+        background: rgba(249, 242, 223, 0.8);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 16px;
+      }
+
+      .meta-label {
+        color: var(--muted);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        margin-bottom: 10px;
+      }
+
+      .meta-value {
+        font-size: 18px;
+      }
+
+      .article {
+        margin-top: 24px;
+        background: rgba(255, 252, 247, 0.7);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: var(--shadow);
+      }
+
+      .article p {
+        color: var(--muted);
+        line-height: 1.9;
+        margin: 0 0 18px;
+      }
+
+      .sidebar {
+        width: 420px;
+        max-width: 100vw;
+        border-left: 1px solid var(--border);
+        background: rgba(255, 248, 236, 0.97);
+        backdrop-filter: blur(18px);
+        box-shadow: -18px 0 36px rgba(72, 49, 29, 0.08);
+        transition: width 220ms ease, transform 220ms ease;
+        overflow: hidden;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+      }
+
+      .sidebar.collapsed {
+        width: 72px;
+      }
+
+      .sidebar-inner {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .sidebar-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 18px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .sidebar-title {
+        font-size: 17px;
+      }
+
+      .icon-button {
+        width: 40px;
+        height: 40px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: var(--panel);
+        cursor: pointer;
+      }
+
+      .sidebar.collapsed .sidebar-title,
+      .sidebar.collapsed .sidebar-body {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .sidebar-body {
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        opacity: 1;
+        transition: opacity 160ms ease;
+      }
+
+      .field,
+      .answer,
+      .scope-panel,
+      .status-panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 14px;
+      }
+
+      .field label,
+      .answer-title,
+      .section-title {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 120px;
+        border: 0;
+        outline: 0;
+        resize: vertical;
+        background: transparent;
+        font: inherit;
+        color: var(--text);
+      }
+
+      .scope-options {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .scope-pill {
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+
+      .scope-pill.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fffaf1;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      .primary,
+      .secondary {
+        border-radius: 14px;
+        padding: 12px 14px;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .primary {
+        border: 0;
+        background: linear-gradient(135deg, #b35c2e, #8f3d16);
+        color: #fffaf1;
+        flex: 1;
+      }
+
+      .secondary {
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text);
+      }
+
+      .status-line,
+      .scope-line,
+      .citation {
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .answer-text {
+        margin: 0 0 12px;
+        line-height: 1.8;
+      }
+
+      .citations {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .citation {
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: var(--panel-strong);
+      }
+
+      @media (max-width: 960px) {
+        .shell {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: fixed;
+          right: 0;
+          width: min(420px, 100vw);
+          z-index: 30;
+        }
+
+        .sidebar.collapsed {
+          transform: translateX(calc(100% - 72px));
+          width: min(420px, 100vw);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <main class="content">
+        <div class="topbar">
+          <div class="brand">BookStack-AI</div>
+          <button id="global-entry" class="global-entry">打开全局问答入口</button>
+        </div>
+
+        <section class="hero">
+          <div class="eyebrow">BookStack Extension Demo</div>
+          <h1>面向企业知识库的智能问答侧边栏</h1>
+          <p class="lead">
+            这个演示页展示了第一阶段前端效果：页面侧边栏主入口、全局顶部次入口、范围切换、问答请求与侧边栏会话状态保留。
+          </p>
+
+          <div class="meta-grid">
+            <div class="meta-card">
+              <div class="meta-label">默认范围</div>
+              <div class="meta-value">当前页</div>
+            </div>
+            <div class="meta-card">
+              <div class="meta-label">可切换范围</div>
+              <div class="meta-value">当前书 / 可访问范围</div>
+            </div>
+            <div class="meta-card">
+              <div class="meta-label">响应模式</div>
+              <div class="meta-value">SSE 预留，当前为 mock 展示</div>
+            </div>
+          </div>
+        </section>
+
+        <article class="article">
+          <h2>认证配置</h2>
+          <p>
+            当前演示内容模拟 BookStack 页面正文。真实接入时，侧边栏会自动携带当前页面 ID、当前书 ID 和用户可访问范围，把问题发送给 AI Gateway。
+          </p>
+          <p>
+            你可以在右侧侧边栏输入诸如“如何接入单点登录？”之类的问题，切换查询范围，再观察 mock 返回的引用来源和会话保留状态。
+          </p>
+          <p>
+            收起侧边栏后，会保留会话状态。再次展开时，最近一次的提问上下文仍然存在，符合设计里“可收起的折叠抽屉 + 保留当前会话状态”的约束。
+          </p>
+        </article>
+      </main>
+
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar-inner">
+          <div class="sidebar-head">
+            <div class="sidebar-title">智能问答</div>
+            <button id="toggle-sidebar" class="icon-button" aria-label="切换侧边栏">⇆</button>
+          </div>
+
+          <div class="sidebar-body">
+            <div class="status-panel">
+              <div class="section-title">入口状态</div>
+              <div id="status-line" class="status-line">页面侧边栏主入口已激活</div>
+            </div>
+
+            <div class="scope-panel">
+              <div class="section-title">查询范围</div>
+              <div class="scope-options">
+                <button class="scope-pill active" data-scope="page">当前页</button>
+                <button class="scope-pill" data-scope="book">当前书</button>
+                <button class="scope-pill" data-scope="workspace">可访问范围</button>
+              </div>
+              <div id="scope-line" class="scope-line" style="margin-top:10px;">将基于当前页和当前用户权限检索</div>
+            </div>
+
+            <div class="field">
+              <label for="question">问题</label>
+              <textarea id="question">如何接入单点登录？</textarea>
+            </div>
+
+            <div class="actions">
+              <button id="ask-button" class="primary">发起问答</button>
+              <button id="page-event-button" class="secondary">模拟页面更新</button>
+            </div>
+
+            <div class="answer">
+              <div class="answer-title">回答</div>
+              <p id="answer-text" class="answer-text">等待提问。</p>
+              <div id="citations" class="citations"></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <script type="module" src="./src/demo.js"></script>
+  </body>
+  </html>
